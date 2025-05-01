@@ -5,7 +5,7 @@
 using biv::Vector;
 
 template<typename T>
-const std::size_t Vector<T>::START_CAPACITY = 10;
+const std::size_t Vector<T>::START_CAPACITY = 1;
 
 template<typename T>
 Vector<T>::Vector() {
@@ -22,14 +22,12 @@ Vector<T>::~Vector() {
 
 template<typename T>
 std::size_t Vector<T>::get_size() const noexcept {
-	std::size_t size;
-	size = sizeof(arr)/sizeof(arr[0]);
 	return size;
 }
 
 template<typename T>
 bool Vector<T>::has_item(const T& value) const noexcept {
-	for (int i; i < size; ++i){
+	for (int i = 0; i < size; ++i){
 		if (arr[i] == value){
 			return true;
 		} 
@@ -39,7 +37,7 @@ bool Vector<T>::has_item(const T& value) const noexcept {
 
 template<typename T>
 bool Vector<T>::insert(const std::size_t position, const T& value) {
-	if (arr[position] == value){
+	if (arr[position - 1] == value){
 		return true;
 	}
 	return false;
@@ -68,15 +66,42 @@ void Vector<T>::push_back(const T& value) {
 	arr[size++] = value;
 }
 
-/*template<typename T>
+template<typename T>
 bool Vector<T>::remove_first(const T& value) {
-	// TODO
-}*/
+	if (size != 0){
+        size_t new_size = size - 1;                         
+        T* result = new T[new_size];
+        for (decltype(size) i = 1; i < size; ++i){                  
+        	result[i-1] = arr[i];
+		}
+        delete[] arr;      
+        arr = result;
+		size = new_size;
+		if (capacity > START_CAPACITY){
+			capacity = capacity - 1;
+		}
+		return true;
+	}
+	return false;
+}
 
-int main(){
+/*int main(){
 	Vector<int> vec;
+	std::cout << "Remove first: " << vec.remove_first(2) << std::endl;
+	std::cout << "Size: " << vec.get_size() << std::endl;
 	vec.push_back(2);
 	vec.push_back(5);
+	vec.push_back(4);
+	vec.push_back(7);
 	vec.print(); 
+	std::cout << "Size: " << vec.get_size() << std::endl;
+	std::cout << "Has item 4: " << vec.has_item(4) << std::endl;
+	std::cout << "Has item 8: " << vec.has_item(8) << std::endl;
+	std::cout << "Position 2 value 5: " << vec.insert(2, 5) << std::endl;
+	std::cout << "Position 1 value 5: " << vec.insert(1, 5) << std::endl;
+	std::cout << "Position 3 value 10: " << vec.insert(3, 10) << std::endl;
+	std::cout << "Remove first: " << vec.remove_first(2) << std::endl;
+	vec.print();
+	std::cout << "Size: " << vec.get_size() << std::endl;
 	return 0;
-}
+}*/

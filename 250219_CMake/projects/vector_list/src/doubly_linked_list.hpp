@@ -14,7 +14,7 @@ namespace biv {
 					
 					Node(const T& value) : value(value) {}
 						
-					Node(const Node&) = delete;
+					Node(const Node&) = delete; 
 					Node& operator = (const Node&) = delete;
 			};
 
