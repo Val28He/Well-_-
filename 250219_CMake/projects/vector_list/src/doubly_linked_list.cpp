@@ -6,9 +6,11 @@ using biv::DoublyLinkedList;
 
 template<typename T>
 DoublyLinkedList<T>::~DoublyLinkedList() {
-	while (begin != NULL){
-		delete[] end;
-		end = end->next;
+	Node* ptr = begin;
+	while (ptr != NULL){
+		Node* next = ptr->next;
+		delete ptr;
+		ptr = next; 
 	}
 }
 
@@ -16,7 +18,7 @@ template<typename T>
 std::size_t DoublyLinkedList<T>::get_size() const noexcept {
 	std::size_t size = 0;
 	for (Node* ptr = begin; ptr != NULL; ptr = ptr->next){
-		size++;
+		++size;
 	}
 	return size;
 }
@@ -55,8 +57,9 @@ void DoublyLinkedList<T>::push_back(const T& value) {
 template<typename T>
 bool DoublyLinkedList<T>::remove_first(const T& value) noexcept {
 	if (begin != NULL){
-		delete[] begin;
-		begin = begin->next;
+		Node* ptr = begin;          
+		begin = ptr->next;     
+		delete ptr;                                 
 		return true;
 	}
 	return false;

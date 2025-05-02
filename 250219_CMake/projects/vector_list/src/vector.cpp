@@ -9,14 +9,15 @@ const std::size_t Vector<T>::START_CAPACITY = 1;
 
 template<typename T>
 Vector<T>::Vector() {
-	arr = new T[size];
-	capacity = START_CAPACITY;
+	arr = new T[START_CAPACITY]; 
+    capacity = START_CAPACITY;
+    size = 0; 
 }
 
 template<typename T>
 Vector<T>::~Vector() {
 	if (arr != nullptr) {
-        free(arr);
+        delete[] arr;
     }
 }
 
@@ -37,10 +38,18 @@ bool Vector<T>::has_item(const T& value) const noexcept {
 
 template<typename T>
 bool Vector<T>::insert(const std::size_t position, const T& value) {
-	if (arr[position - 1] == value){
-		return true;
+	if (position > size){
+		return false;
 	}
-	return false;
+	if (size >= capacity){
+		capacity = capacity * 2;
+	}
+	for (std::size_t i = size; i > position - 1; --i) {
+		arr[i] = arr[i - 1];
+	}
+	arr[position - 1] = value;
+	++size;
+	return true;
 }
 
 template<typename T>
@@ -92,14 +101,14 @@ bool Vector<T>::remove_first(const T& value) {
 	vec.push_back(2);
 	vec.push_back(5);
 	vec.push_back(4);
-	vec.push_back(7);
+	vec.push_back(1);
 	vec.print(); 
 	std::cout << "Size: " << vec.get_size() << std::endl;
 	std::cout << "Has item 4: " << vec.has_item(4) << std::endl;
 	std::cout << "Has item 8: " << vec.has_item(8) << std::endl;
-	std::cout << "Position 2 value 5: " << vec.insert(2, 5) << std::endl;
-	std::cout << "Position 1 value 5: " << vec.insert(1, 5) << std::endl;
+	std::cout << "Position 5 value 7: " << vec.insert(6, 7) << std::endl;
 	std::cout << "Position 3 value 10: " << vec.insert(3, 10) << std::endl;
+	vec.print();
 	std::cout << "Remove first: " << vec.remove_first(2) << std::endl;
 	vec.print();
 	std::cout << "Size: " << vec.get_size() << std::endl;
