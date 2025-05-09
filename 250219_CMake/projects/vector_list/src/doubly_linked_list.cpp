@@ -44,42 +44,54 @@ void DoublyLinkedList<T>::print() const noexcept {
 template<typename T>
 void DoublyLinkedList<T>::push_back(const T& value) {
 	Node* ptr = new Node(value);
-	//prev указывает на предыдущий объект
-	ptr->prev = end;
-	//next ведет на добавляемый объект
-	if (end != nullptr){
-		end->next = ptr;                   
-	}
-	if (begin  == nullptr){
+
+	if (begin == nullptr) {
+		// пустой список
 		begin = ptr;
+	} else {
+		// непустой список
+		end->next = ptr;
+		ptr->prev = end;
 	}
+
 	end = ptr;
 }
 
 template<typename T>
 bool DoublyLinkedList<T>::remove_first(const T& value) noexcept {
-	for (Node* ptr = begin; ptr != nullptr; ptr = ptr->next){
-		if (ptr->value == value){
-			//если значение в начале
-			if (ptr == begin){
-				begin = ptr->next;
+	Node *found = nullptr;
+	for (Node* ptr = begin; ptr != nullptr; ptr = ptr->next) {
+			if (ptr->value == value) {
+				found = ptr;
+				break;
 			}
-			else{
-				ptr->prev->next = ptr->next;
-			}
-			//если значение в конце
-			if (ptr == end){
-				end = ptr->prev;
-			}
-			else{
-				ptr->next->prev = ptr->prev;
-			}
-			return true;
-			break;
-		}
 	}
-	return false;
+		
+		if (found == nullptr) {
+			return false;
+		}
+		
+		if (found->prev != nullptr) {
+			// удаляем не первый элемент
+			found->prev->next = found->next;
+		} else {
+			// удаляем первый элемент
+			begin = found->next;
+		}
+		
+		if (found->next != nullptr) {
+			// удаляем непоследний элемент
+			found->next->prev = found->prev;
+		} else {
+			// удаляем последний элемент
+			end = found->prev;
+		}
+		
+		delete found;
+		
+	return true;
 }
+
 
 /*int main(){
 	DoublyLinkedList<int> vec;

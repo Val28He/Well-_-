@@ -44,22 +44,30 @@ bool Vector<T>::insert(const std::size_t position, const T& value) {
 
 	if (size >= capacity){
 		capacity = capacity * 2;
+		//создать новый массив
+		T* temp = new T[capacity];
+		//заполнить массив 
+		for (std::size_t i = 0; i < position; ++i) {
+			temp[i] = arr[i];
+		}
+		temp[position] = value;
+		for (std::size_t i = position; i < size; ++i) {
+			temp[i + 1] = arr[i];
+		}
+		++size;
+		//удалить старый массив и присвоить ему всё новое 
+		delete[] arr;
+		arr = temp;
+		return true;
 	}
-	//создать новый массив
-	T* temp = new T[capacity];
-	//заполнить массив 
-	for (std::size_t i = 0; i < position - 1; ++i) {
-		temp[i] = arr[i];
+	else {
+		++size;
+		for (std::size_t i = size - 1; i >= position; --i){
+			arr[i + 1] = arr[i];
+		}
+		arr[position] = value;
+		return true;
 	}
-	temp[position - 1] = value;
-	for (std::size_t i = position - 1; i < size; ++i) {
-		temp[i + 1] = arr[i];
-	}
-	++size;
-	//удалить старый массив и присвоить ему всё новое 
-	delete[] arr;
-	arr = temp;
-	return true;
 }
 
 template<typename T>

@@ -176,10 +176,10 @@ bool LongNumber::operator < (const LongNumber& x) const {
 LongNumber LongNumber::operator + (const LongNumber& x) const {
 	LongNumber result;
 	if (x == LongNumber("0")){
-		return LongNumber(*this);
+		return LongNumber (*this);
 	}
 	if (*this == LongNumber("0")){
-		return LongNumber(x);
+		return LongNumber (x); 
 	}
 	LongNumber one(*this);
 	LongNumber two(x);
@@ -559,7 +559,7 @@ namespace biv {
 
 int main(){
 	LongNumber x = LongNumber("45");
-	LongNumber y = LongNumber("5");
+	LongNumber y = LongNumber("0");
 	LongNumber z = x + y;
 	std::cout << z;
 }
