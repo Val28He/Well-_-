@@ -46,50 +46,41 @@ void DoublyLinkedList<T>::push_back(const T& value) {
 	Node* ptr = new Node(value);
 
 	if (begin == nullptr) {
-		// пустой список
-		begin = ptr;
+		begin = end = ptr;
 	} else {
-		// непустой список
-		end->next = ptr;
 		ptr->prev = end;
+		end->next = ptr;
+		end = ptr;
 	}
-
-	end = ptr;
 }
 
 template<typename T>
 bool DoublyLinkedList<T>::remove_first(const T& value) noexcept {
 	Node *found = nullptr;
 	for (Node* ptr = begin; ptr != nullptr; ptr = ptr->next) {
-			if (ptr->value == value) {
-				found = ptr;
-				break;
+		if (ptr->value == value) {
+			if (ptr == begin) {
+				if (begin->next == nullptr){
+					begin = nullptr;
+					end = nullptr;
+				} 
+				else {
+					begin = ptr->next;
+					ptr->next->prev = nullptr;
+				}
+			} else if (ptr == end) {
+				end = ptr->prev;
+				ptr->prev->next = nullptr;
+			} else {
+				ptr->prev->next = ptr->next;
+				ptr->next->prev = ptr->prev;
 			}
+			delete ptr;
+			return true;
+			break;
+		}
 	}
-		
-		if (found == nullptr) {
-			return false;
-		}
-		
-		if (found->prev != nullptr) {
-			// удаляем не первый элемент
-			found->prev->next = found->next;
-		} else {
-			// удаляем первый элемент
-			begin = found->next;
-		}
-		
-		if (found->next != nullptr) {
-			// удаляем непоследний элемент
-			found->next->prev = found->prev;
-		} else {
-			// удаляем последний элемент
-			end = found->prev;
-		}
-		
-		delete found;
-		
-	return true;
+	return false;
 }
 
 
