@@ -22,10 +22,9 @@ LongNumber::LongNumber(const char* const str) {
 		sign = 1;
 		length = str_length;
 	}
-	
 	numbers = new int[length];
 	for (int i = 0; i < length; ++i){
-		numbers[i] = str[str_length - i - 1];
+		numbers[i] = str[str_length - i - 1] - '0';
 	}
 }
 
@@ -71,7 +70,6 @@ LongNumber& LongNumber::operator = (const char* const str) {
 	for (int i = 0; i < length; ++i){
 		numbers[i] = str[str_length - i - 1] - '0';
 	}
-	
 	return *this;
 }
 
@@ -144,7 +142,7 @@ bool LongNumber::operator > (const LongNumber& x) const {
 		return true;
 	}
 	else {
-		for (int i = 0; i < length; ++i){
+		for (int i = length - 1; i >= 0; --i){
 			if (numbers[i] <= x.numbers[i]){
 				return false;
 			}
@@ -164,7 +162,7 @@ bool LongNumber::operator < (const LongNumber& x) const {
 		return true;
 	}
 	else {
-		for (int i = 0; i < length; ++i){
+		for (int i = length - 1; i >= 0; --i){
 			if (numbers[i] >= x.numbers[i]){
 				return false;
 			}
@@ -173,110 +171,146 @@ bool LongNumber::operator < (const LongNumber& x) const {
 	}
 }
 
-LongNumber LongNumber::operator + (const LongNumber& x) const {
-	LongNumber result;
-	if (x == LongNumber("0")){
-		return LongNumber (*this);
+int compare(int *numbersA, int lengthA, int *numbersB, int lengthB){
+	if (lengthA > lengthB){
+		return 1;
 	}
-	if (*this == LongNumber("0")){
-		return LongNumber (x); 
-	}
-	LongNumber one(*this);
-	LongNumber two(x);
-	int resultSign;
-	int* resultNumbers = nullptr;
-	if (one.sign == two.sign){
-		int minLength = 0;
-		int maxLength = 0;
-		int* maxNumbers = nullptr;
-		if (one.length > two.length){
-			minLength = two.length;
-			maxLength = one.length;
-			maxNumbers = one.numbers;
-		}
-		else {
-			minLength = one.length;
-			maxLength = two.length;
-			maxNumbers = two.numbers;
-		}
-
-		int sumNumbers[maxLength + 1];
-		for (int i = 0; i < maxLength + 1; i++) {
-			sumNumbers[i] = 0;
-		}
-
-		resultSign = one.sign;
-		int diff = maxLength - minLength;
-		for (int i = 0; i < minLength; ++i) {
-			if (one.numbers[i] + two.numbers[i] < 10){
-				sumNumbers[i] = one.numbers[i] + two.numbers[i];
-			}
-			else {
-				sumNumbers[i] = (one.numbers[i] + two.numbers[i])%10;
-				sumNumbers[i + 1] = sumNumbers[i + 1] + (one.numbers[i] + two.numbers[i])/10;
-			}
-		}
-		if (sumNumbers[0] == 0){
-			if (diff > 0){
-				for (int i = minLength; i < maxLength; ++i) {
-					sumNumbers[i] = maxNumbers[i];
-				}
-			}
-		}
-		if (sumNumbers[maxLength - 1] == 0){
-			for (int i = 1; i < maxLength; ++i){
-				resultNumbers[i - 1] = sumNumbers[i];
-			}
-		}
-		else {
-			resultNumbers = sumNumbers;
-		}
+	else if (lengthA < lengthB){
+		return -1;
 	}
 	else {
-		int minLength = 0;
-		int maxLength = 0;
-		int maxSign = 0;
-		int minSign = 0;
-		int* maxNumbers = nullptr;
-		int* minNumbers = nullptr;
-		if (one.length > two.length){
-			minLength = two.length;
-			maxLength = one.length;
-			maxNumbers = one.numbers;
-			minNumbers = two.numbers;
-			maxSign = one.sign;
-			minSign = two.sign;
-		}
-		else {
-			minLength = one.length;
-			maxLength = two.length;
-			maxNumbers = two.numbers;
-			minNumbers = one.numbers;
-			maxSign = two.sign;
-			minSign = one.sign;
-		}
-		int sumNumbers[maxLength];
-		int diff = maxLength - minLength;
-		for (int i = 0; i < minLength; ++i){
-			if (maxNumbers[i] - minNumbers[i] >= 0){
-				sumNumbers[i] = maxNumbers[i] - minNumbers[i];
-			}	
-			else {
-				sumNumbers[i] = 10 + maxNumbers[i] - minNumbers[i];
-				maxNumbers[i + 1] = maxNumbers[i + 1] - 1;
+		for (int i = lengthA - 1; i >= 0; --i){
+			if (numbersA[i] > numbersB[i]){
+				return 1;
+			}
+			else if (numbersA[i] < numbersB[i]){
+				return -1;
 			}
 		}
-		if (sumNumbers[maxLength - 1] == 0){
-			for (int i = 1; i < maxLength; ++i){
-				resultNumbers[i - 1] = sumNumbers[i];
-			}
-		}
-		else {
-			resultNumbers = sumNumbers;
-		}
-		resultSign = maxSign;
 	}
-	int resultLength = sizeof(resultNumbers)/sizeof(resultNumbers[0]);
+	return 0;
+}
+
+void plus(int *numbersA, int lengthA, int *numbersB, int lengthB, int **numbersResult, int *lengthResult){
+	int resultLength;
+	int* resultNumbers;
+	
+	int maxLength;
+	int minLength;
+	int* maxNumbers;
+	int* minNumbers;
+	
+	if (lengthA >= lengthB){
+		maxLength = lengthA;
+		minLength = lengthB;
+		maxNumbers = numbersA;
+		minNumbers = numbersB;
+	}
+	else {
+		maxLength = lengthB;
+		minLength = lengthA;
+		maxNumbers = numbersB;
+		minNumbers = numbersA;
+	}
+
+	resultNumbers = new int[maxLength + 1];
+
+	int transition = 0;
+	for (int i = 0; i < minLength; ++i){
+		int sum = maxNumbers[i] + minNumbers[i] + transition;
+		resultNumbers[i] = sum % 10;
+		transition = sum / 10;
+	}
+
+	for (int i = minLength; i < maxLength; ++i){
+		int sum = maxNumbers[i] + transition;
+		resultNumbers[i] = sum % 10;
+		transition = sum / 10;
+	}
+
+	resultLength = maxLength;
+	if (transition > 0) {
+		resultNumbers[resultLength] = transition;
+		++resultLength;
+	}
+
+	*numbersResult = resultNumbers;
+	*lengthResult = resultLength;
+}
+
+void minus(int *numbersA, int lengthA, int *numbersB, int lengthB, int **numbersResult, int *lengthResult){
+	int resultLength;
+	int* resultNumbers;
+
+	int maxLength;
+	int minLength;
+	int* maxNumbers;
+	int* minNumbers;
+	
+	maxLength = lengthA;
+	minLength = lengthB;
+	maxNumbers = numbersA;
+	minNumbers = numbersB;
+
+	resultNumbers = new int[maxLength];
+
+	int transition = 0;
+	for (int i = 0; i < minLength; ++i){
+  		resultNumbers[i] = maxNumbers[i] - minNumbers[i] - transition;
+  		if (resultNumbers[i] < 0) {
+    		transition = 1;
+    		resultNumbers[i] += 10;
+  		} 
+		else {
+     		transition = 0;
+  		}
+	}
+
+	for (int i = minLength; i < maxLength; ++i){
+  		resultNumbers[i] = maxNumbers[i] - transition;
+  		if (resultNumbers[i] < 0) {
+    		transition = 1;
+    		resultNumbers[i] += 10;
+  		} 
+		else {
+     		transition = 0;
+  		}
+	}
+
+	resultLength = maxLength;
+	if (resultNumbers[resultLength - 1] == 0) {
+		--resultLength;
+	}
+
+	*numbersResult = resultNumbers;
+	*lengthResult = resultLength;
+}
+
+LongNumber LongNumber::operator + (const LongNumber& x) const { 
+	int resultSign;
+	int resultLength;
+	int* resultNumbers;
+
+	if (sign == x.sign){
+		resultSign = sign;
+		plus(numbers, length, x.numbers, x.length, &resultNumbers, &resultLength);
+	}
+	else {
+		int cmp = compare(numbers, length, x.numbers, x.length);
+		if (cmp > 0){
+			resultSign = sign;
+			minus(numbers, length, x.numbers, x.length, &resultNumbers, &resultLength);
+		}
+		else if (cmp < 0){
+			resultSign = x.sign;
+			minus(x.numbers, x.length, numbers, length, &resultNumbers, &resultLength);
+		}
+		else {
+			return LongNumber("0");
+		}
+	}
+
+	LongNumber result;
 	result.numbers = resultNumbers;
 	result.length = resultLength;
 	result.sign = resultSign;
@@ -284,105 +318,30 @@ LongNumber LongNumber::operator + (const LongNumber& x) const {
 }
 
 LongNumber LongNumber::operator - (const LongNumber& x) const {
-	LongNumber result;
-	if (x == LongNumber("0")){
-		return LongNumber(*this);
-	}
-	if (*this == LongNumber("0")){
-		return LongNumber(x);
-	}
-	LongNumber one(*this);
-	LongNumber two(x);
 	int resultSign;
-	int* resultNumbers = nullptr;
-	if (one.sign == two.sign){
-		int minLength = 0;
-		int maxLength = 0;
-		int maxSign = 0;
-		int minSign = 0;
-		int* maxNumbers = nullptr;
-		int* minNumbers = nullptr;
-		if (one.length > two.length){
-			minLength = two.length;
-			maxLength = one.length;
-			maxNumbers = one.numbers;
-			minNumbers = two.numbers;
-			maxSign = one.sign;
-			minSign = two.sign;
+	int resultLength;
+	int* resultNumbers;
+
+	if (sign != x.sign){
+		resultSign = sign;
+		plus(numbers, length, x.numbers, x.length, &resultNumbers, &resultLength);
+	}
+	else {
+		int cmp = compare(numbers, length, x.numbers, x.length);
+		if (cmp > 0){
+			resultSign = sign;
+			minus(numbers, length, x.numbers, x.length, &resultNumbers, &resultLength);
+		}
+		else if (cmp < 0){
+			resultSign = -x.sign;
+			minus(x.numbers, x.length, numbers, length, &resultNumbers, &resultLength);
 		}
 		else {
-			minLength = one.length;
-			maxLength = two.length;
-			maxNumbers = two.numbers;
-			minNumbers = one.numbers;
-			maxSign = two.sign;
-			minSign = one.sign;
+			return LongNumber("0");
 		}
-		int diffNumbers[maxLength];
-		int diff = maxLength - minLength;
-		for (int i = 0; i < minLength; ++i){
-			if (maxNumbers[i] - minNumbers[i] >= 0){
-				diffNumbers[i] = maxNumbers[i] - minNumbers[i];
-			}	
-			else {
-				diffNumbers[i] = 10 + maxNumbers[i] - minNumbers[i];
-				maxNumbers[i + 1] = maxNumbers[i + 1] - 1;
-			}
-		}
-		if (diffNumbers[maxLength - 1] == 0){
-			for (int i = 1; i < maxLength; ++i){
-				resultNumbers[i - 1] = diffNumbers[i];
-			}
-		}
-		else {
-			resultNumbers = diffNumbers;
-		}
-		resultSign = maxSign;
 	}
 
-	else {
-		int minLength = 0;
-		int maxLength = 0;
-		int* maxNumbers = nullptr;
-		if (one.length > two.length){
-			minLength = two.length;
-			maxLength = one.length;
-			maxNumbers = one.numbers;
-		}
-		else {
-			minLength = one.length;
-			maxLength = two.length;
-			maxNumbers = two.numbers;
-		}
-		int diffNumbers[maxLength + 1];
-		resultSign = one.sign;
-		int diff = maxLength - minLength;
-		for (int i = 0; i < minLength; ++i) {
-			if (one.numbers[i] + two.numbers[i] < 10){
-				diffNumbers[i] = one.numbers[i] + two.numbers[i];
-			}
-			else {
-				diffNumbers[i] = (one.numbers[i] + two.numbers[i])%10;
-				diffNumbers[i] = diffNumbers[i] + (one.numbers[i] + two.numbers[i])/10;
-			}
-		}
-		if (diffNumbers[0] == 0){
-			if (diff > 0){
-				for (int i = minLength; i < maxLength; ++i) {
-					diffNumbers[i] = maxNumbers[i];
-				}
-			}
-		}
-		if (diffNumbers[maxLength - 1] == 0){
-			for (int i = 1; i < maxLength; ++i){
-				resultNumbers[i - 1] = diffNumbers[i];
-			}
-		}
-		else {
-			resultNumbers = diffNumbers;
-		}
-	}
-	int resultLength = sizeof(resultNumbers)/sizeof(resultNumbers[0]);
+	LongNumber result;
 	result.numbers = resultNumbers;
 	result.length = resultLength;
 	result.sign = resultSign;
@@ -390,65 +349,70 @@ LongNumber LongNumber::operator - (const LongNumber& x) const {
 }
 
 LongNumber LongNumber::operator * (const LongNumber& x) const {
-	LongNumber result;
-	if (x == LongNumber("1")){
-		return LongNumber(*this);
-	}
-	if (*this == LongNumber("1")){
-		return LongNumber(x);
-	}
 	if ((*this == LongNumber("0")) or (x == LongNumber("0"))){
-		return "0";
+		return LongNumber("0");
 	}
-	LongNumber one(*this);
-	LongNumber two(x);
+
 	int resultSign;
-	if (one.sign == two.sign){
+	int resultLength;
+	int* resultNumbers;
+
+	if (sign == x.sign){
 		resultSign = 1;
 	}
-	else{
+	else {
 		resultSign = -1;
 	}
-	int minLength = 0;
-	int maxLength = 0;
-	int* maxNumbers = nullptr;
-	int* minNumbers = nullptr;
-	if (one.length > two.length){
-		minLength = two.length;
-		maxLength = one.length;
-		maxNumbers = one.numbers;
-		minNumbers = two.numbers;
+
+	int maxLength;
+	int minLength;
+	int* maxNumbers;
+	int* minNumbers;
+	
+	if (length >= x.length){
+		maxLength = length;
+		minLength = x.length;
+		maxNumbers = numbers;
+		minNumbers = x.numbers;
 	}
 	else {
-		minLength = one.length;
-		maxLength = two.length;
-		maxNumbers = two.numbers;
-		minNumbers = one.numbers;
+		maxLength = x.length;
+		minLength = length;
+		maxNumbers = x.numbers;
+		minNumbers = numbers;
 	}
-	int multLength = maxLength * 2;
-	int* multNumbers = nullptr;
+
+	resultLength = maxLength * 2;
+	resultNumbers = new int[resultLength]();
+
+	//Я НЕ БУДУ ЭТО ТРОГАТЬ РАДИ КАКОЙ-ТО ТАМ ОПТИМИЗАЦИИ, ОНО РАБОТАЕТ И СЛАВА БОГУ	
 	for (int i = 0; i < minLength; ++i){
 		for (int j = 0; j < maxLength; ++j){
-			multNumbers[j + i] = multNumbers[j + i] + (maxNumbers[j] * minNumbers[i])%10;
-			multNumbers[j + i + 1] = multNumbers[j + i + 1] + (maxNumbers[j] * minNumbers[i])/10;
-		}
-	}
-	int* resultNumbers = nullptr;
-	for (int i = multLength - 1; i >= 0; --i){
-		if (multNumbers[i] != 0){
-			for (int j = 0; j < i + 1; ++j){
-				resultNumbers[j] = multNumbers[j];
-				break;
+			resultNumbers[j + i] = resultNumbers[j + i] + (maxNumbers[j] * minNumbers[i])% 10;
+			if (resultNumbers[j + i] < 10){
+				resultNumbers[j + i + 1] = resultNumbers[j + i + 1] + (maxNumbers[j] * minNumbers[i])/ 10;
+			}
+			else {
+				resultNumbers[j + i + 1] = (resultNumbers[j + i])/10 + resultNumbers[j + i + 1] + (maxNumbers[j] * minNumbers[i])/ 10;
+				resultNumbers[j + i] = (resultNumbers[j + i])%10;
 			}
 		}
 	}
-	int resultLength = sizeof(resultNumbers)/sizeof(resultNumbers[0]);
+
+	int i = resultLength - 1;
+	while (resultNumbers[i] == 0){
+		--resultLength;
+		--i;
+	}
+
+	LongNumber result;
 	result.numbers = resultNumbers;
 	result.length = resultLength;
 	result.sign = resultSign;
 	return result;
 }
 
+//Тут деление, но оно не работает
 /*LongNumber LongNumber::operator / (const LongNumber& x) const {
 	if (x == LongNumber("1"))
 		return LongNumber(*this);
@@ -515,7 +479,7 @@ int LongNumber::get_digits_number() const noexcept {
 }
 
 int LongNumber::get_rank_number(int rank) const {
-	return numbers[rank];
+	return numbers[length - rank];
 }
 
 bool LongNumber::is_negative() const noexcept {
@@ -557,9 +521,82 @@ namespace biv {
 	}
 }
 
-int main(){
+/*int main(){
 	LongNumber x = LongNumber("45");
-	LongNumber y = LongNumber("0");
-	LongNumber z = x + y;
-	std::cout << z;
-}
+	LongNumber y = LongNumber("5");
+	LongNumber z = LongNumber("5");
+	LongNumber l = LongNumber ("-8");
+	LongNumber h = LongNumber("12");
+	LongNumber n = LongNumber("99");
+	LongNumber big = LongNumber("198");
+	LongNumber minusn = LongNumber("-99");
+	LongNumber zero = LongNumber("0");
+	LongNumber one = LongNumber("1");
+	LongNumber minusone = LongNumber("-1");
+
+	std::cout << "Проверка булевых функций:" << std::endl;
+	std::cout << "45 == 5: " << (x == y) << std::endl;
+	std::cout << "45 != 5: " << (x != y) << std::endl;
+	std::cout << "45 > 5: " << (x > y) << std::endl;
+	std::cout << "45 < 5: " << (x < y) << std::endl;
+	std::cout << "37 < 45: " << (h < x) << std::endl;
+	std::cout << "5 == 5: " << (y == z) << std::endl;
+	std::cout << "5 != 5: " << (y != z) << std::endl;
+	std::cout << "5 > 5: " << (y > z) << std::endl;	
+	std::cout << "5 < 5: " << (y < z) << std::endl;
+	std::cout << "-8 > 5: " << (l > z) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "Проверка дополнительных функций:" << std::endl;	
+	std::cout << "Длина 45: " << x.get_digits_number() << std::endl;
+	std::cout << "Длина 5: " << y.get_digits_number() << std::endl;
+	std::cout << "Длина -8: " << l.get_digits_number() << std::endl;
+	std::cout << "Получить 1 элемент 45: " << x.get_rank_number(1) << std::endl;
+	std::cout << "Получить 2 элемент 198: " << big.get_rank_number(2) << std::endl;
+	std::cout << "Отрицателен ли 5?: " << y.is_negative() << std::endl;
+	std::cout << "Отрицателен ли -8?: " << l.is_negative() << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "Проверка сложения:" << std::endl;
+	std::cout << "45 + 0 = " << (x + zero) << std::endl;
+	std::cout << "0 + 5 = " << (zero + y) << std::endl;
+	std::cout << "0 + 0 = " << (zero + zero) << std::endl;
+	std::cout << "1 + 1 = " << (one + one) << std::endl;
+	std::cout << "1 + (-1) = " << (one + minusone) << std::endl;
+	std::cout << "99 + 99 = " << (n + n) << std::endl;
+	std::cout << "-99 + 12 = " << (minusn + h) << std::endl;
+	std::cout << "12 + (-99) = " << (h + minusn) << std::endl;
+	std::cout << "12 + (-8) = " << (h + l) << std::endl;
+	std::cout << "(-8) + 12 = " << (l + h) << std::endl;
+	std::cout << "45 + 5 = " << (x + y) << std::endl;
+	std::cout << "5 + 45 = " << (y + x) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "Проверка вычитания:" << std::endl;
+	std::cout << "45 - 0 = " << (x - zero) << std::endl;
+	std::cout << "0 - 5 = " << (zero - y) << std::endl;
+	std::cout << "0 - 0 = " << (zero - zero) << std::endl;
+	std::cout << "1 - 1 = " << (one - one) << std::endl;
+	std::cout << "1 - (-1) = " << (one - minusone) << std::endl;
+	std::cout << "99 - 99 = " << (n - n) << std::endl;
+	std::cout << "-99 - 12 = " << (minusn - h) << std::endl;
+	std::cout << "12 - (-99) = " << (h - minusn) << std::endl;
+	std::cout << "12 - (-8) = " << (h - l) << std::endl;
+	std::cout << "(-8) - 12 = " << (l - h) << std::endl;
+	std::cout << "45 - 5 = " << (x - y) << std::endl;
+	std::cout << "5 - 45 = " << (y - x) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "Проверка умножения:" << std::endl;
+	std::cout << "45 * 0 = " << (x * zero) << std::endl;
+	std::cout << "45 * 1 = " << (x * one) << std::endl;
+	std::cout << "1 * 45 = " << (one * x) << std::endl;
+	std::cout << "1 * 1 = " << (one * one) << std::endl;
+	std::cout << "1 * (-1) = " << (one * minusone) << std::endl;
+	std::cout << "0 * 99 = " << (zero * n) << std::endl;
+	std::cout << "12 * 99 = " << (h * n) << std::endl;
+	std::cout << "198 * 99 * -1 = " << (big * n * minusone) << std::endl;
+	std::cout << "12 * (-8) = " << (h * l) << std::endl;
+	std::cout << "99 * 99 = " << (n * n) << std::endl;
+	std::cout << std::endl;
+}*/
